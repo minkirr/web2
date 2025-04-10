@@ -1,89 +1,40 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Заполнение данных</title>
+    <title>Time Picker</title>
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 </head>
 <body>
-    <h3>Заполните данные:</h3>
-
-    <form id="userDataForm">
-        <label for="fullName">ФИО:</label><br>
-        <input type="text" id="fullName" placeholder="Введите ФИО" required><br><br>
-
-        <label for="userPhone">Телефон:</label><br>
-        <input type="tel" id="userPhone" placeholder="Введите телефон" required><br><br>
-
-        <label for="userEmail">Email:</label><br>
-        <input type="email" id="userEmail" placeholder="Введите email" required><br><br>
-
-        <label for="timeInput">Введите время:</label><br>
-        <input type="time" id="timeInput" required><br><br>
-
-        <button type="submit" id="sendDataBtn">Отправить</button>
-    </form>
+    <h3>Введите время вручную:</h3>
+    <input type="time" id="timeInput">
+    <button id="sendTimeBtn">Отправить</button>
 
     <script>
         const tg = window.Telegram?.WebApp;
 
-        // Проверяем доступность Telegram WebApp
-        if (!tg) {
-            document.body.innerHTML = '<p>Работает только в Telegram!</p>';
-        }
-
-        // Функция отправки данных
-        function sendData(event) {
-            event.preventDefault();
-
+        function sendTime() {
             if (!tg) {
-                console.log('Telegram WebApp не доступен!');
                 alert('Работает только в Telegram!');
                 return;
             }
 
-            const fullName = document.getElementById('fullName').value;
-            const userPhone = document.getElementById('userPhone').value;
-            const userEmail = document.getElementById('userEmail').value;
-            const time = document.getElementById('timeInput').value;
-
-            // Проверяем, что все поля заполнены
-            if (!fullName || !userPhone || !userEmail || !time) {
-                alert('Пожалуйста, заполните все поля!');
+            const input = document.getElementById('timeInput').value;
+            if (!input) {
+                alert('Пожалуйста, введите время!');
                 return;
             }
 
-            // Получаем данные пользователя из Telegram
-            const tgId = tg.initDataUnsafe.user.id;
-            const tgUsername = tg.initDataUnsafe.user.username;
-
-            // Формируем объект с данными пользователя и временем
-            const userData = {
-                tg_id: tgId,
-                tg_username: tgUsername,
-                full_name: fullName,
-                user_phone: userPhone,
-                user_email: userEmail,
-                time: time
-            };
-
-            // Логируем данные перед отправкой (для отладки)
-            console.log('Отправляемые данные:', userData);
-
-            // Отправляем данные в Telegram боту
-            tg.sendData(`user_data:${JSON.stringify(userData)}`);
-
-            // Закрываем WebApp после отправки данных
+            // Отправляем введённое время
+            tg.sendData(`time:${input}`);
             tg.close();
         }
 
-        // Инициализация Telegram WebApp
         if (tg) {
             tg.ready();
-
-            // Подключаем обработчик отправки данных
-            document.getElementById('userDataForm').addEventListener('submit', sendData);
+            document.getElementById('sendTimeBtn').addEventListener('click', sendTime);
+        } else {
+            document.body.innerHTML = '<p>Запустите в Telegram!</p>';
         }
     </script>
 </body>
