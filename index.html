@@ -47,8 +47,8 @@
             const tgId = tg.initDataUnsafe.user.id;
             const tgUsername = tg.initDataUnsafe.user.username;
 
-            // Формируем строку для отправки
-            const data = {
+            // Формируем объект с данными пользователя
+            const userData = {
                 tg_id: tgId,
                 tg_username: tgUsername,
                 full_name: fullName,
@@ -56,10 +56,10 @@
                 user_email: userEmail
             };
 
-            // Отправляем данные в основной бот
-            tg.sendData(JSON.stringify(data));
+            // Отправляем данные в Telegram боту
+            tg.sendData(`user_data:${JSON.stringify(userData)}`);
 
-            // Закрываем WebApp после отправки
+            // Закрываем WebApp после отправки данных
             tg.close();
         }
 
