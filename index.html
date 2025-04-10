@@ -39,10 +39,17 @@
                 return;
             }
 
+            // Инициализация WebApp
+            tg.ready();
             tg.expand();
             tg.enableClosingConfirmation();
 
-            document.getElementById('sendTimeBtn').addEventListener('click', () => {
+            // Обработчик через onclick
+            document.getElementById('sendTimeBtn').onclick = handleSendTime;
+
+            function handleSendTime(e) {
+                e.preventDefault(); // Предотвращаем действие по умолчанию
+                
                 const timeInput = document.getElementById('timeInput');
                 const timeValue = timeInput.value;
                 
@@ -58,7 +65,10 @@
                 console.log('[WebApp] Попытка отправки:', timeValue);
 
                 try {
-                    tg.sendData(time:${timeValue});
+                    // Корректная отправка данных
+                    tg.sendData(JSON.stringify({
+                        time: timeValue
+                    }));
                     
                     statusEl.textContent = '✅ Данные отправлены!';
                     statusEl.style.color = 'green';
@@ -67,16 +77,16 @@
                     setTimeout(() => {
                         tg.close();
                     }, 1500);
-                } catch (e) {
+                } catch (error) {
                     statusEl.textContent = '❌ Ошибка отправки!';
                     statusEl.style.color = 'red';
-                    console.error('[WebApp] Ошибка:', e);
+                    console.error('[WebApp] Ошибка:', error);
                     
                     setTimeout(() => {
                         statusEl.textContent = '';
                     }, 3000);
                 }
-            });
+            }
         });
     </script>
 </body>
