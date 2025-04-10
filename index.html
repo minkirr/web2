@@ -2,40 +2,61 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Time Picker</title>
-    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <h3>Введите время вручную:</h3>
-    <input type="time" id="timeInput">
+    <h3>Введите время:</h3>
+    <input type="time" id="timeInput" step="300">
     <button id="sendTimeBtn">Отправить</button>
 
     <script>
-        const tg = window.Telegram?.WebApp;
-
-        function sendTime() {
+        document.addEventListener('DOMContentLoaded', () => {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            
             if (!tg) {
-                alert('Работает только в Telegram!');
+                document.body.innerHTML = '<p>Пожалуйста, откройте в Telegram!</p>';
                 return;
             }
 
-            const input = document.getElementById('timeInput').value;
-            if (!input) {
-                alert('Пожалуйста, введите время!');
-                return;
-            }
+            tg.expand();
+            tg.enableClosingConfirmation();
 
-            // Отправляем введённое время
-            tg.sendData(`time:${input}`);
-            tg.close();
-        }
+            document.getElementById('sendTimeBtn').addEventListener('click', () => {
+                const timeInput = document.getElementById('timeInput');
+                const timeValue = timeInput.valueAsDate;
 
-        if (tg) {
-            tg.ready();
-            document.getElementById('sendTimeBtn').addEventListener('click', sendTime);
-        } else {
-            document.body.innerHTML = '<p>Запустите в Telegram!</p>';
-        }
+                if (!timeValue) {
+                    alert('Пожалуйста, выберите время!');
+                    return;
+                }
+
+                const hours = String(timeValue.getHours()).padStart(2, '0');
+                const minutes = String(timeValue.getMinutes()).padStart(2, '0');
+                const timeString = ${hours}:${minutes};
+
+                try {
+                    tg.sendData(time:${timeString});
+                    setTimeout(() => tg.close(), 300);
+                } catch (e) {
+                    alert('Ошибка отправки. Попробуйте ещё раз.');
+                    console.error('Send error:', e);
+                }
+            });
+        });
     </script>
 </body>
 </html>
