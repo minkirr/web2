@@ -3,33 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Time Picker</title>
-  <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 </head>
 <body>
-    <button id="sendTimeBtn">Отправить текущее время</button>
+    <h3>Введите время вручную:</h3>
+    <input type="time" id="timeInput">
+    <button id="sendTimeBtn">Отправить</button>
 
     <script>
-        // Инициализация Telegram Web App
         const tg = window.Telegram?.WebApp;
-        
+
         function sendTime() {
             if (!tg) {
                 alert('Работает только в Telegram!');
                 return;
             }
-            
-            // Получаем текущее время
-            const now = new Date();
-            const time = ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')};
-            
-            // Отправляем время в формате "time:HH:MM"
-            tg.sendData(time:${time});
-            
-            // Закрываем Mini App
+
+            const input = document.getElementById('timeInput').value;
+            if (!input) {
+                alert('Пожалуйста, введите время!');
+                return;
+            }
+
+            // Отправляем введённое время
+            tg.sendData(`time:${input}`);
             tg.close();
         }
 
-        // Инициализация приложения
         if (tg) {
             tg.ready();
             document.getElementById('sendTimeBtn').addEventListener('click', sendTime);
