@@ -16,16 +16,23 @@
             margin: 10px;
             font-size: 16px;
         }
+        #status {
+            min-height: 20px;
+            margin: 15px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h3>Введите время:</h3>
     <input type="time" id="timeInput" step="300">
     <button id="sendTimeBtn">Отправить</button>
+    <div id="status"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const tg = window.Telegram && window.Telegram.WebApp;
+            const tg = window.Telegram?.WebApp;
+            const statusEl = document.getElementById('status');
             
             if (!tg) {
                 document.body.innerHTML = '<p>Пожалуйста, откройте в Telegram!</p>';
@@ -37,23 +44,37 @@
 
             document.getElementById('sendTimeBtn').addEventListener('click', () => {
                 const timeInput = document.getElementById('timeInput');
-                const timeValue = timeInput.valueAsDate;
-
+                const timeValue = timeInput.value;
+                
                 if (!timeValue) {
-                    alert('Пожалуйста, выберите время!');
+                    statusEl.textContent = '❌ Выберите время!';
+                    statusEl.style.color = 'red';
                     return;
                 }
 
-                const hours = String(timeValue.getHours()).padStart(2, '0');
-                const minutes = String(timeValue.getMinutes()).padStart(2, '0');
-                const timeString = ${hours}:${minutes};
+                statusEl.textContent = '⌛ Отправка...';
+                statusEl.style.color = 'blue';
+                
+                console.log('[WebApp] Попытка отправки:', timeValue);
 
                 try {
-                    tg.sendData(time:${timeString});
-                    setTimeout(() => tg.close(), 300);
+                    tg.sendData(time:${timeValue});
+                    
+                    statusEl.textContent = '✅ Данные отправлены!';
+                    statusEl.style.color = 'green';
+                    console.log('[WebApp] Данные успешно отправлены');
+                    
+                    setTimeout(() => {
+                        tg.close();
+                    }, 1500);
                 } catch (e) {
-                    alert('Ошибка отправки. Попробуйте ещё раз.');
-                    console.error('Send error:', e);
+                    statusEl.textContent = '❌ Ошибка отправки!';
+                    statusEl.style.color = 'red';
+                    console.error('[WebApp] Ошибка:', e);
+                    
+                    setTimeout(() => {
+                        statusEl.textContent = '';
+                    }, 3000);
                 }
             });
         });
