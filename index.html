@@ -2,91 +2,73 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Picker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            text-align: center;
-        }
-        input, button {
-            padding: 10px;
-            margin: 10px;
-            font-size: 16px;
-        }
-        #status {
-            min-height: 20px;
-            margin: 15px;
-            font-weight: bold;
-        }
+        body { font-family: Arial, padding: 20px; text-align: center; }
+        #status { margin: 15px; font-weight: bold; min-height: 24px; }
+        button { padding: 10px 20px; font-size: 16px; }
     </style>
 </head>
 <body>
-    <h3>Введите время:</h3>
-    <input type="time" id="timeInput" step="300">
-    <button id="sendTimeBtn">Отправить</button>
+    <h3>Выберите время:</h3>
+    <input type="time" id="timeInput">
+    <button id="sendBtn">Отправить</button>
     <div id="status"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const tg = window.Telegram?.WebApp;
             const statusEl = document.getElementById('status');
             
+            // Дебаг-информация
+            console.log('WebApp init:', {
+                platform: tg?.platform,
+                initData: tg?.initData,
+                initDataUnsafe: tg?.initDataUnsafe
+            });
+
             if (!tg) {
-                document.body.innerHTML = '<p>Пожалуйста, откройте в Telegram!</p>';
+                statusEl.textContent = '❌ Запустите в Telegram!';
                 return;
             }
 
-            // Инициализация WebApp
-            tg.ready();
             tg.expand();
             tg.enableClosingConfirmation();
 
-            // Обработчик через onclick
-            document.getElementById('sendTimeBtn').onclick = handleSendTime;
-
-            function handleSendTime(e) {
-                e.preventDefault(); // Предотвращаем действие по умолчанию
-                
-                const timeInput = document.getElementById('timeInput');
-                const timeValue = timeInput.value;
-                
+            document.getElementById('sendBtn').addEventListener('click', () => {
+                const timeValue = document.getElementById('timeInput').value;
                 if (!timeValue) {
-                    statusEl.textContent = '❌ Выберите время!';
-                    statusEl.style.color = 'red';
+                    statusEl.textContent = '⚠️ Выберите время!';
                     return;
                 }
 
+                const data = JSON.stringify({ time: timeValue });
+                console.log('Попытка отправки:', data);
+
                 statusEl.textContent = '⌛ Отправка...';
                 statusEl.style.color = 'blue';
-                
-                console.log('[WebApp] Попытка отправки:', timeValue);
 
                 try {
-                    // Корректная отправка данных
-                    tg.sendData(JSON.stringify({
-                        time: timeValue
-                    }));
+                    tg.sendData(data);
+                    console.log('sendData вызван');
                     
                     statusEl.textContent = '✅ Данные отправлены!';
                     statusEl.style.color = 'green';
-                    console.log('[WebApp] Данные успешно отправлены');
                     
-                    setTimeout(() => {
-                        tg.close();
-                    }, 1500);
-                } catch (error) {
-                    statusEl.textContent = '❌ Ошибка отправки!';
+                    // Тестовая проверка получения
+                    setTimeout(async () => {
+                        const testResponse = await fetch('https://your-backend.com/ping');
+                        console.log('Тест доставки:', await testResponse.text());
+                    }, 2000);
+                    
+                } catch (e) {
+                    statusEl.textContent = '❌ Ошибка: ' + e.message;
                     statusEl.style.color = 'red';
-                    console.error('[WebApp] Ошибка:', error);
-                    
-                    setTimeout(() => {
-                        statusEl.textContent = '';
-                    }, 3000);
+                    console.error('Ошибка отправки:', e);
                 }
-            }
+            });
         });
     </script>
 </body>
