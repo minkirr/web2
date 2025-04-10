@@ -6,9 +6,22 @@
     <title>Time Picker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: Arial, padding: 20px; text-align: center; }
-        #status { margin: 15px; font-weight: bold; min-height: 24px; }
-        button { padding: 10px 20px; font-size: 16px; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        #status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -18,57 +31,79 @@
     <div id="status"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const tg = window.Telegram?.WebApp;
+        function showAlert(message, isError = false) {
+            alert((isError ? '❌ ОШИБКА: ' : 'ℹ️ ') + message);
             const statusEl = document.getElementById('status');
-            
-            // Дебаг-информация
-            console.log('WebApp init:', {
-                platform: tg?.platform,
-                initData: tg?.initData,
-                initDataUnsafe: tg?.initDataUnsafe
-            });
+            statusEl.textContent = message;
+            statusEl.style.background = isError ? '#ffdddd' : '#ddffdd';
+            statusEl.style.color = isError ? 'red' : 'green';
+        }
 
-            if (!tg) {
-                statusEl.textContent = '❌ Запустите в Telegram!';
-                return;
+        function debugLog(message) {
+            console.log('[DEBUG]', message);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                debugLog('Инициализация приложения');
+                
+                const tg = window.Telegram?.WebApp;
+                if (!tg) {
+                    throw new Error('Это приложение работает только внутри Telegram!');
+                }
+
+                debugLog('Telegram WebApp доступен');
+                debugLog('Платформа: ' + tg.platform);
+                debugLog('InitData: ' + JSON.stringify(tg.initData));
+
+                tg.expand();
+                tg.enableClosingConfirmation();
+                debugLog('WebApp расширен и настроен');
+
+                document.getElementById('sendBtn').addEventListener('click', () => {
+                    try {
+                        debugLog('Кнопка "Отправить" нажата');
+                        
+                        const timeInput = document.getElementById('timeInput');
+                        if (!timeInput.value) {
+                            throw new Error('Пожалуйста, выберите время!');
+                        }
+
+                        const payload = {
+                            time: timeInput.value,
+                            userId: tg.initDataUnsafe?.user?.id
+                        };
+                        const dataString = JSON.stringify(payload);
+                        debugLog('Отправляемые данные: ' + dataString);
+
+                        showAlert('Попытка отправки данных...');
+                        
+                        tg.sendData(dataString);
+                        debugLog('Метод sendData вызван успешно');
+                        
+                        showAlert('Данные успешно отправлены!');
+                        
+                        setTimeout(() => {
+                            try {
+                                tg.close();
+                                debugLog('WebApp закрыт');
+                            } catch (e) {
+                                showAlert('Ошибка при закрытии: ' + e.message, true);
+                            }
+                        }, 1000);
+
+                    } catch (e) {
+                        showAlert(e.message, true);
+                        debugLog('Ошибка: ' + e.stack);
+                    }
+                });
+
+                debugLog('Приложение готово к работе');
+
+            } catch (e) {
+                showAlert('Критическая ошибка инициализации: ' + e.message, true);
+                debugLog('FATAL: ' + e.stack);
             }
-
-            tg.expand();
-            tg.enableClosingConfirmation();
-
-            document.getElementById('sendBtn').addEventListener('click', () => {
-                const timeValue = document.getElementById('timeInput').value;
-                if (!timeValue) {
-                    statusEl.textContent = '⚠️ Выберите время!';
-                    return;
-                }
-
-                const data = JSON.stringify({ time: timeValue });
-                console.log('Попытка отправки:', data);
-
-                statusEl.textContent = '⌛ Отправка...';
-                statusEl.style.color = 'blue';
-
-                try {
-                    tg.sendData(data);
-                    console.log('sendData вызван');
-                    
-                    statusEl.textContent = '✅ Данные отправлены!';
-                    statusEl.style.color = 'green';
-                    
-                    // Тестовая проверка получения
-                    setTimeout(async () => {
-                        const testResponse = await fetch('https://your-backend.com/ping');
-                        console.log('Тест доставки:', await testResponse.text());
-                    }, 2000);
-                    
-                } catch (e) {
-                    statusEl.textContent = '❌ Ошибка: ' + e.message;
-                    statusEl.style.color = 'red';
-                    console.error('Ошибка отправки:', e);
-                }
-            });
         });
     </script>
 </body>
