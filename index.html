@@ -90,7 +90,7 @@
                     logToConsole(`Отправка через WebApp: ${JSON.stringify(data)}`);
                     setStatus('Отправка через WebApp...');
                     
-                    tg.sendData(JSON.stringify(data));
+                    tg.sendData(data);
                     logToConsole('sendData выполнен успешно');
                     setStatus('Данные отправлены через WebApp!');
                     
